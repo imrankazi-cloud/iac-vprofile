@@ -14,15 +14,14 @@ on:
     paths:
       - terraform/**    
 
-environment:
-    # Credentials for the AWS account
-    AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-    # Bucket name for Terraform state
-    TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
-    AWS_REGION: us-east-1
-    EKS_CLUSTER: vprofile-eks
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  BUCKET_TF_STATE: ${{ secrets.BUCKET_TF_STATE }}
+  AWS_REGION: us-east-1
+  EKS_CLUSTER: vprofile-eks
+
 jobs:
     terraform:
         name: "Apply Terraform"
@@ -35,14 +34,16 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
 
-            - uses: hashicorp/setup-terraform@v3
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
               
             
             - name: Terraform Init
               id: init
-              run: terraform init -input=false -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}"
-
-            - name: Terraform fmt
+              run: terraform init -backend-config="bucket=$BUCKET_TF_STATE" 
+      
+   
+            - name: Terraform Format
               id: fmt
               run: terraform fmt -check -recursive
 
@@ -53,3 +54,8 @@ jobs:
             - name: Terraform Plan
               id: plan
               run: terraform plan -input=false -out=tfplan -var="aws_region=${{ secrets.AWS_REGION }}" -var="eks_cluster=${{ secrets.EKS_CLUSTER }}"
+              continue-on-error: true
+
+            - name: Terraform Plan Status
+              if: steps.plan.outcome == 'failure'
+              run: exit 1
