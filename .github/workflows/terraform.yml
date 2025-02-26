@@ -34,9 +34,10 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
 
-            - name: Setup Terraform
-              uses: hashicorp/setup-terraform@v3
-              
+              - name: Setup Terraform 1.6.3
+              uses: hashicorp/setup-terraform@v4
+              with:
+                terraform_version: 1.6.3  
             
             - name: Terraform Init
               id: init
