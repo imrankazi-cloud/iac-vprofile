@@ -64,7 +64,7 @@ jobs:
 
             - name: Terraform Plan
               id: plan
-              run: terraform plan -input=false -out=tfplan -var="aws_region=${{ secrets.AWS_REGION }}" -var="eks_cluster=${{ secrets.EKS_CLUSTER }}"
+              run: terraform plan -input=false -out=tfplan
               continue-on-error: true
 
             - name: Terraform Plan Status
